@@ -5,7 +5,7 @@
 ### Linux / macOS
 
 ```bash
-ln -s /path/to/repo/macros/autoload.lym ~/.klayout/macros/autoload.lym
+ln -s /path/to/repo/macros/register_libraries.lym ~/.klayout/macros/register_libraries.lym
 ```
 
 ### Windows
@@ -19,13 +19,23 @@ ln -s /path/to/repo/macros/autoload.lym ~/.klayout/macros/autoload.lym
 ## 일상 작업 흐름
 
 ```bash
-git pull                           # 최신 변경사항 가져오기
-# KLayout 실행 → 자동으로 master.oas 생성 및 통합 뷰 표시
-# layouts/member_이름.oas 편집
-git add layouts/member_이름.oas
+# 1. 최신 변경사항 가져오기
+git pull
+
+# 2. KLayout 실행 → 라이브러리 자동 등록 (register_libraries.lym)
+
+# 3. 본인 담당 파일 작업
+#    layouts/자기이름.oas 편집
+
+# 4. 저장 후 커밋 & push
+git add layouts/자기이름.oas
 git commit -m "feat: 작업 내용 요약"
 git push
 ```
+
+## 통합 담당자 작업 (master.oas 배치)
+
+KLayout에서 `Edit > Cell > Instance...` 로 라이브러리 셀 배치 후 `master.oas`로 저장, release 브랜치 PR.
 
 ## Release 절차 (통합 담당자)
 
@@ -45,3 +55,5 @@ git push
 | `master.oas` 저장 실패 | 쓰기 권한 또는 디스크 공간 | 경고 무시해도 뷰는 정상 |
 | 레이어 색상이 다름 | `layers.lyp` 미적용 | `tech/layers.lyp` 존재 확인 |
 | 좌표 범위 초과 경고 | 블록 경계 위반 | `docs/coordinate_guide.md` 참고 |
+| 라이브러리 목록에 셀이 없음 | 매크로 미등록 또는 LFS 포인터 파일 | Macro Development에서 macros/ 경로 확인, git lfs pull 실행 |
+| "파일이 너무 작습니다" 로그 | Git LFS 미설치 | `git lfs install && git lfs pull` |
