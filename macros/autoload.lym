@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<klayout-macro>
+ <description>KLayout Auto Assembly — 팀 레이아웃 자동 통합</description>
+ <autorun>true</autorun>
+ <autorun-early>false</autorun-early>
+ <interpreter>ruby</interpreter>
+ <script><![CDATA[
+module KLayoutAutoAssembly
+
+  # 저장소 루트 탐색 — File.realpath로 심볼릭 링크 해소 후 .git 디렉토리 탐색
+  def self.find_repo_root(start_path)
+    path = File.dirname(File.realpath(start_path))
+    until path == File.dirname(path)
+      return path if File.directory?(File.join(path, ".git"))
+      path = File.dirname(path)
+    end
+    nil
+  end
+
+  def self.run
+    repo_root = find_repo_root(__FILE__)
+    if repo_root.nil?
+      RBA::MessageBox.warning(
+        "Auto Assembly",
+        "저장소 루트를 찾을 수 없습니다.\ndocs/usage.md 설치 가이드를 확인하세요.",
+        RBA::MessageBox::Ok
+      )
+      return
+    end
+    RBA::Logger.info("Auto Assembly: 저장소 루트 = #{repo_root}")
+  end
+
+end
+
+KLayoutAutoAssembly.run
+  ]]></script>
+</klayout-macro>
