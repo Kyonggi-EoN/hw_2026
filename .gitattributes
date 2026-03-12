@@ -1,0 +1,33 @@
+# Text lf <-> CRLF
+* text=auto
+
+# Binary Layout files LFS settings
+*.gds filter=lfs diff=lfs merge=lfs -text binary
+*.oas filter=lfs diff=lfs merge=lfs -text binary
+
+# src code, scripts reinforce LF
+*.sh text eol=lf
+*.py text eol=lf
+*.cpp text eol=lf
+*.hpp text eol=lf
+*.h text eol=lf
+*.c text eol=lf
+*.ino text eol=lf
+
+# Klayouts, Text based data
+*.lyp text eol=lf
+*.lyt text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+
+*.lym text eol=lf 
+*.rb  text eol=lf
+*.drc text eol=lf
+*.rdb text eol=lf
+
+# except the image and binary files
+*.png binary
+*.jpg binary
+*.pdf binary
+*.pth binary
+*.onnx binary
