@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<klayout-macro>
+ <description>KLayout Library Registration — layouts/ 자동 라이브러리 등록</description>
+ <autorun>true</autorun>
+ <autorun-early>false</autorun-early>
+ <interpreter>python</interpreter>
+ <text><![CDATA[
+import pya
+import os
+import glob
+
+
+def find_repo_root(start):
+    path = os.path.dirname(os.path.realpath(start))
+    while path != os.path.dirname(path):
+        if os.path.isdir(os.path.join(path, ".git")):
+            return path
+        path = os.path.dirname(path)
+    return None
+
+
+def is_lfs_pointer(filepath):
+    return os.path.getsize(filepath) < 200
+
+
+def get_layout_files(layouts_dir):
+    oas = sorted(glob.glob(os.path.join(layouts_dir, "*.oas")))
+    gds = sorted(glob.glob(os.path.join(layouts_dir, "*.gds")))
+    oas_names = {os.path.splitext(os.path.basename(f))[0] for f in oas}
+    gds_filtered = [f for f in gds
+                    if os.path.splitext(os.path.basename(f))[0] not in oas_names]
+    return oas + gds_filtered
+
+
+def register_libraries():
+    repo_root = find_repo_root(__file__)
+    if repo_root is None:
+        pya.Logger.error(
+            "register_libraries: 저장소 루트를 찾을 수 없습니다. "
+            "docs/usage.md 설치 가이드를 확인하세요."
+        )
+        return
+
+    layouts_dir = os.path.join(repo_root, "layouts")
+    if not os.path.isdir(layouts_dir):
+        pya.Logger.warn("register_libraries: layouts/ 디렉토리가 없습니다.")
+        return
+
+    all_files = get_layout_files(layouts_dir)
+    if not all_files:
+        pya.Logger.warn("register_libraries: layouts/ 에 .oas/.gds 파일이 없습니다.")
+        return
+
+    for filepath in all_files:
+        lib_name = os.path.splitext(os.path.basename(filepath))[0]
+
+        if is_lfs_pointer(filepath):
+            pya.Logger.error(
+                f"register_libraries: {lib_name} — 파일이 너무 작습니다 ({os.path.getsize(filepath)}바이트). "
+                "Git LFS가 설치되지 않았거나 git pull이 완료되지 않았을 수 있습니다."
+            )
+            continue
+
+        try:
+            lib = pya.Library()
+            lib.name = lib_name
+            lib.layout().read(filepath)
+            lib.register()
+            pya.Logger.info(f"register_libraries: 등록 완료 — {lib_name}")
+        except Exception as e:
+            pya.Logger.error(f"register_libraries: 등록 실패 — {lib_name}: {e}")
+
+    lyp_path = os.path.join(repo_root, "tech", "layers.lyp")
+    if os.path.isfile(lyp_path):
+        pya.Logger.info(
+            "register_libraries: tech/layers.lyp 발견 — "
+            "Technology 파일 또는 Edit > Layer Properties > Load 로 적용하세요."
+        )
+
+
+register_libraries()
+  ]]></text>
+</klayout-macro>
