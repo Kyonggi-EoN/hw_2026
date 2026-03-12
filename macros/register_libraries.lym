@@ -65,7 +65,7 @@ def register_libraries():
             lib = pya.Library()
             lib.name = lib_name
             lib.layout().read(filepath)
-            lib.register()
+            lib.register(lib_name)
             pya.Logger.info(f"register_libraries: 등록 완료 — {lib_name}")
         except Exception as e:
             pya.Logger.error(f"register_libraries: 등록 실패 — {lib_name}: {e}")
