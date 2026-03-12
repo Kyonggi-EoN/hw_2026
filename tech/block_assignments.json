@@ -1,0 +1,6 @@
+{
+  "_comment": "팀원별 담당 블록 좌표 범위 (단위: nm). 플로어플랜 확정 후 수정 필요.",
+  "member_A.oas": { "xmin": 0,      "ymin": 0,      "xmax": 100000, "ymax": 100000 },
+  "member_B.oas": { "xmin": 100000, "ymin": 0,      "xmax": 200000, "ymax": 100000 },
+  "member_C.oas": { "xmin": 0,      "ymin": 100000, "xmax": 100000, "ymax": 200000 }
+}
