@@ -8,32 +8,42 @@
 import sys
 import os
 import pya
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 from lib_utils import find_repo_root, get_layout_files, LFS_POINTER_MAX_BYTES
 
+_reload_action = None
+
+
+def _get_layouts_dir():
+    repo_root = find_repo_root(__file__)
+    if repo_root is None:
+        return None, None
+    return repo_root, os.path.join(repo_root, "layouts")
+
 
 def register_libraries():
-    repo_root = find_repo_root(__file__)
+    repo_root, layouts_dir = _get_layouts_dir()
     if repo_root is None:
         pya.Logger.error(
             "register_libraries: 저장소 루트를 찾을 수 없습니다. "
             "docs/usage.md 설치 가이드를 확인하세요."
         )
-        return
+        return []
 
-    layouts_dir = os.path.join(repo_root, "layouts")
     if not os.path.isdir(layouts_dir):
         pya.Logger.warn("register_libraries: layouts/ 디렉토리가 없습니다.")
-        return
+        return []
 
     all_files = get_layout_files(layouts_dir)
     if not all_files:
         pya.Logger.warn("register_libraries: layouts/ 에 .oas/.gds 파일이 없습니다.")
-        return
+        return []
 
+    registered = []
     for filepath in all_files:
-        lib_name = os.path.splitext(os.path.basename(filepath))[0]
+        lib_name = Path(filepath).stem
         file_size = os.path.getsize(filepath)
 
         if file_size < LFS_POINTER_MAX_BYTES:
@@ -49,6 +59,7 @@ def register_libraries():
             lib.layout().read(filepath)
             lib.register(lib_name)
             pya.Logger.info(f"register_libraries: 등록 완료 — {lib_name}")
+            registered.append(lib_name)
         except Exception as e:
             pya.Logger.error(f"register_libraries: 등록 실패 — {lib_name}: {e}")
 
@@ -59,7 +70,70 @@ def register_libraries():
             "Technology 파일 또는 Edit > Layer Properties > Load 로 적용하세요."
         )
 
+    return registered
+
+
+def reload_libraries():
+    repo_root, layouts_dir = _get_layouts_dir()
+    if repo_root is None:
+        pya.MessageBox.warning(
+            "Reload Libraries",
+            "저장소 루트를 찾을 수 없습니다.",
+            pya.MessageBox.Ok
+        )
+        return
+
+    # 기존 라이브러리 삭제
+    all_files = get_layout_files(layouts_dir) if os.path.isdir(layouts_dir) else []
+    for filepath in all_files:
+        lib_name = Path(filepath).stem
+        existing = pya.Library.library_by_name(lib_name)
+        if existing:
+            existing.delete()
+            pya.Logger.info(f"reload_libraries: 기존 라이브러리 삭제 — {lib_name}")
+
+    # 재등록
+    registered = register_libraries()
+
+    # 열린 뷰 갱신
+    try:
+        mw = pya.Application.instance().main_window()
+        for i in range(mw.views()):
+            mw.view(i).update_content()
+    except Exception:
+        pass
+
+    if registered:
+        pya.MessageBox.info(
+            "Reload Libraries",
+            "라이브러리 재로드 완료:\n" + "\n".join(f"  \u2713 {n}" for n in registered),
+            pya.MessageBox.Ok
+        )
+    else:
+        pya.MessageBox.warning(
+            "Reload Libraries",
+            "등록된 라이브러리가 없습니다. layouts/ 폴더를 확인하세요.",
+            pya.MessageBox.Ok
+        )
+
+
+def _add_reload_menu():
+    global _reload_action
+    if _reload_action is not None:
+        return
+    try:
+        menu = pya.Application.instance().main_window().menu()
+        action = pya.Action()
+        action.title = "Reload Libraries"
+        action.on_triggered = reload_libraries
+        menu.insert_item("tools_menu.end", "reload_libraries_action", action)
+        _reload_action = action  # keep alive + mark as registered
+        pya.Logger.info("register_libraries: 'Tools > Reload Libraries' 메뉴 등록 완료")
+    except Exception as e:
+        pya.Logger.error(f"register_libraries: 메뉴 등록 실패 — {e}")
+
 
 register_libraries()
+_add_reload_menu()
   ]]></text>
 </klayout-macro>
