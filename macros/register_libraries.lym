@@ -5,31 +5,12 @@
  <autorun-early>false</autorun-early>
  <interpreter>python</interpreter>
  <text><![CDATA[
-import pya
+import sys
 import os
-import glob
+import pya
 
-
-def find_repo_root(start):
-    path = os.path.dirname(os.path.realpath(start))
-    while path != os.path.dirname(path):
-        if os.path.isdir(os.path.join(path, ".git")):
-            return path
-        path = os.path.dirname(path)
-    return None
-
-
-def is_lfs_pointer(filepath):
-    return os.path.getsize(filepath) < 200
-
-
-def get_layout_files(layouts_dir):
-    oas = sorted(glob.glob(os.path.join(layouts_dir, "*.oas")))
-    gds = sorted(glob.glob(os.path.join(layouts_dir, "*.gds")))
-    oas_names = {os.path.splitext(os.path.basename(f))[0] for f in oas}
-    gds_filtered = [f for f in gds
-                    if os.path.splitext(os.path.basename(f))[0] not in oas_names]
-    return oas + gds_filtered
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+from lib_utils import find_repo_root, get_layout_files, LFS_POINTER_MAX_BYTES
 
 
 def register_libraries():
@@ -53,10 +34,11 @@ def register_libraries():
 
     for filepath in all_files:
         lib_name = os.path.splitext(os.path.basename(filepath))[0]
+        file_size = os.path.getsize(filepath)
 
-        if is_lfs_pointer(filepath):
+        if file_size < LFS_POINTER_MAX_BYTES:
             pya.Logger.error(
-                f"register_libraries: {lib_name} — 파일이 너무 작습니다 ({os.path.getsize(filepath)}바이트). "
+                f"register_libraries: {lib_name} — 파일이 너무 작습니다 ({file_size}바이트). "
                 "Git LFS가 설치되지 않았거나 git pull이 완료되지 않았을 수 있습니다."
             )
             continue

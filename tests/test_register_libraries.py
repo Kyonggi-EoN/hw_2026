@@ -3,41 +3,15 @@ register_libraries.lym의 순수 Python 유틸리티 함수 단위 테스트.
 pya 없이 실행 가능한 로직만 테스트한다.
 """
 import os
-import tempfile
 import pytest
 
+from lib_utils import (
+    find_repo_root,
+    get_layout_files,
+    is_lfs_pointer,
+    LFS_POINTER_MAX_BYTES,
+)
 
-# --- 테스트 대상 함수 (매크로와 동일한 로직 복사) ---
-
-def find_repo_root(start):
-    path = os.path.dirname(os.path.realpath(start))
-    while path != os.path.dirname(path):
-        if os.path.isdir(os.path.join(path, ".git")):
-            return path
-        path = os.path.dirname(path)
-    return None
-
-
-def is_lfs_pointer(filepath):
-    return os.path.getsize(filepath) < 200
-
-
-def get_layout_files(layouts_dir):
-    """
-    layouts_dir에서 .oas와 .gds 파일을 수집한다.
-    이름 충돌 시 .oas 우선.
-    반환: 절대 경로 리스트 (정렬됨)
-    """
-    import glob
-    oas = sorted(glob.glob(os.path.join(layouts_dir, "*.oas")))
-    gds = sorted(glob.glob(os.path.join(layouts_dir, "*.gds")))
-    oas_names = {os.path.splitext(os.path.basename(f))[0] for f in oas}
-    gds_filtered = [f for f in gds
-                    if os.path.splitext(os.path.basename(f))[0] not in oas_names]
-    return oas + gds_filtered
-
-
-# --- 테스트 ---
 
 class TestFindRepoRoot:
     def test_finds_root_from_child_dir(self, tmp_path):
@@ -82,14 +56,14 @@ class TestIsLfsPointer:
         f.write_bytes(b"\x00" * 300)
         assert is_lfs_pointer(str(f)) is False
 
-    def test_boundary_199_bytes_is_pointer(self, tmp_path):
+    def test_boundary_one_below_is_pointer(self, tmp_path):
         f = tmp_path / "boundary.oas"
-        f.write_bytes(b"\x00" * 199)
+        f.write_bytes(b"\x00" * (LFS_POINTER_MAX_BYTES - 1))
         assert is_lfs_pointer(str(f)) is True
 
-    def test_boundary_200_bytes_is_not_pointer(self, tmp_path):
+    def test_boundary_at_threshold_is_not_pointer(self, tmp_path):
         f = tmp_path / "boundary2.oas"
-        f.write_bytes(b"\x00" * 200)
+        f.write_bytes(b"\x00" * LFS_POINTER_MAX_BYTES)
         assert is_lfs_pointer(str(f)) is False
 
 
