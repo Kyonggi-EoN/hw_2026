@@ -3,7 +3,6 @@ Shared utility functions for KLayout library registration.
 Used by register_libraries.lym and tests/test_register_libraries.py.
 """
 import os
-import glob
 from pathlib import Path
 
 LFS_POINTER_MAX_BYTES = 200  # Git LFS pointer files are ~150 bytes
