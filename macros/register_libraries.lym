@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 from lib_utils import find_repo_root, get_layout_files, LFS_POINTER_MAX_BYTES
 
 # 라이브러리를 검색할 대상 최상위 폴더 목록
-TARGET_FOLDERS = ["layouts", "master"]
+TARGET_FOLDERS = ["layouts", "master", "master2"]
 
 _reload_action = None
 # [핵심 수정 1] KLayout 크래시 방지를 위해 라이브러리 객체의 참조를 유지하는 전역 딕셔너리
