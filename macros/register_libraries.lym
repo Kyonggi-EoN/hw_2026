@@ -3,8 +3,14 @@
  <description>KLayout Library Registration</description>
  <autorun>true</autorun>
  <autorun-early>false</autorun-early>
+ <priority>0</priority>
+ <shortcut/>
+ <show-in-menu>false</show-in-menu>
+ <group-name/>
+ <menu-path/>
  <interpreter>python</interpreter>
- <text><![CDATA[
+ <dsl-interpreter-name/>
+ <text>
 import sys
 import os
 import pya
@@ -17,6 +23,8 @@ from lib_utils import find_repo_root, get_layout_files, LFS_POINTER_MAX_BYTES
 TARGET_FOLDERS = ["layouts", "master"]
 
 _reload_action = None
+# [핵심 수정 1] KLayout 크래시 방지를 위해 라이브러리 객체의 참조를 유지하는 전역 딕셔너리
+_kept_libraries = {}  
 
 
 def _get_layouts_dirs():
@@ -129,8 +137,9 @@ def reload_libraries():
 
     try:
         mw = pya.Application.instance().main_window()
-        for i in range(mw.views()):
-            mw.view(i).update_content()
+        if mw is not None:
+            for i in range(mw.views()):
+                mw.view(i).update_content()
     except Exception:
         pass
 
@@ -153,7 +162,11 @@ def _add_reload_menu():
     if _reload_action is not None:
         return
     try:
-        menu = pya.Application.instance().main_window().menu()
+        mw = pya.Application.instance().main_window()
+        # KLayout 시작 시 메인 윈도우가 아직 완전히 로드되지 않은 상태에 대한 예외 처리
+        if mw is None:
+            return  
+        menu = mw.menu()
         action = pya.Action()
         action.title = "Reload Libraries"
         action.on_triggered = reload_libraries
