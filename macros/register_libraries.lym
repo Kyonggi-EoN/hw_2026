@@ -10,7 +10,7 @@
  <menu-path/>
  <interpreter>python</interpreter>
  <dsl-interpreter-name/>
- <text>
+ <text><![CDATA[
 import sys
 import os
 import pya
@@ -19,12 +19,8 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 from lib_utils import find_repo_root, get_layout_files, LFS_POINTER_MAX_BYTES
 
-# 라이브러리를 검색할 대상 최상위 폴더 목록
-TARGET_FOLDERS = ["layouts", "master","master2"]
-
+TARGET_FOLDERS = ["layouts", "master", "master2"]
 _reload_action = None
-# [핵심 수정 1] KLayout 크래시 방지를 위해 라이브러리 객체의 참조를 유지하는 전역 딕셔너리
-_kept_libraries = {}  
 
 
 def _get_layouts_dirs():
@@ -37,9 +33,6 @@ def _get_layouts_dirs():
 
 
 def _get_library_groups(target_dirs):
-    """
-    대상 폴더 및 하위 폴더를 탐색하여 '파일의 바로 상위 폴더명'을 라이브러리 이름으로 지정합니다.
-    """
     groups = {}
     for base_dir in target_dirs:
         if not os.path.isdir(base_dir):
@@ -72,8 +65,16 @@ def register_libraries():
     
     for lib_name, filepaths in library_groups.items():
         try:
-            lib = pya.Library()
-            layout = lib.layout()
+            existing = pya.Library.library_by_name(lib_name)
+            if existing:
+                lib = existing
+                layout = lib.layout()
+                # [수정 A] 구버전 KLayout 호환성을 위해 clear() 대신 빈 레이아웃을 덮어씌워 안전하게 초기화
+                layout.assign(pya.Layout()) 
+            else:
+                lib = pya.Library()
+                layout = lib.layout()
+
             valid_files_count = 0
             
             for filepath in filepaths:
@@ -82,36 +83,36 @@ def register_libraries():
                     pya.Logger.error(f"register_libraries: {Path(filepath).name} — 파일이 너무 작습니다.")
                     continue
 
-                # GDS / OASIS 파일의 이름 (확장자 제외)
                 target_cell_name = Path(filepath).stem
                 
-                # 1. 파일 읽기 '전'의 최상위 셀 이름들을 안전하게 문자열로 기억
-                existing_top_names = {c.name for c in layout.top_cells()}
-
-                # 2. 파일 읽기 (보통 'TOP' 이라는 이름으로 들어옴)
-                layout.read(filepath)
+                tmp_layout = pya.Layout()
+                tmp_layout.read(filepath)
                 
-                # 3. 방금 읽어 들여서 '새롭게 추가된' 최상위 셀들만 필터링
-                new_top_cells = [c for c in layout.top_cells() if c.name not in existing_top_names]
+                # [수정 B] len() 함수 사용을 위해 KLayout 객체를 파이썬 List로 명시적 변환 (82번 줄 오류 해결)
+                top_cells = list(tmp_layout.top_cells())
                 
-                for tc in new_top_cells:
-                    # 4. 추가된 셀의 이름을 GDS 파일명으로 즉시 변경
-                    if len(new_top_cells) == 1:
-                        tc.name = target_cell_name
+                for tmp_tc in top_cells:
+                    if len(top_cells) == 1:
+                        new_name = target_cell_name
                     else:
-                        # 한 파일 안에 최상위 셀이 여러 개일 경우를 대비한 충돌 방지
-                        tc.name = f"{target_cell_name}_{tc.name}"
+                        new_name = f"{target_cell_name}_{tmp_tc.name}"
+                    
+                    new_cell = layout.create_cell(new_name)
+                    new_cell.copy_tree(tmp_tc)
                 
                 valid_files_count += 1
             
             if valid_files_count > 0:
-                lib.name = lib_name
-                lib.register(lib_name)
-                pya.Logger.info(f"register_libraries: 등록 완료 — {lib_name} (총 {valid_files_count}개 셀)")
+                if not existing:
+                    lib.name = lib_name
+                    lib.description = lib_name
+                    lib.register(lib_name)
+                
+                pya.Logger.info(f"register_libraries: 등록 완료 — {lib_name} (총 {valid_files_count}개 파일)")
                 registered.append(lib_name)
                 
         except Exception as e:
-            pya.Logger.error(f"register_libraries: 등록 실패 — {lib_name} 라이브러리 생성 중 오류: {e}")
+            pya.Logger.error(f"register_libraries: 등록 실패 — {lib_name} 라이브러리 처리 중 오류: {e}")
 
     lyp_path = os.path.join(repo_root, "tech", "layers.lyp")
     if os.path.isfile(lyp_path):
@@ -125,13 +126,6 @@ def reload_libraries():
     if repo_root is None:
         pya.MessageBox.warning("Reload Libraries", "저장소 루트를 찾을 수 없습니다.", pya.MessageBox.Ok)
         return
-
-    library_groups = _get_library_groups(layouts_dirs)
-
-    for lib_name in library_groups.keys():
-        existing = pya.Library.library_by_name(lib_name)
-        if existing:
-            existing.delete()
 
     registered = register_libraries()
 
@@ -163,7 +157,6 @@ def _add_reload_menu():
         return
     try:
         mw = pya.Application.instance().main_window()
-        # KLayout 시작 시 메인 윈도우가 아직 완전히 로드되지 않은 상태에 대한 예외 처리
         if mw is None:
             return  
         menu = mw.menu()
