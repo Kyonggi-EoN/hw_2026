@@ -21,6 +21,8 @@ git pull
 #   재시작 후 master.oas 열기 → 배치 위치 유지 + 셀 내용 최신화
 ```
 
+`Reload Libraries` 전에 반드시 `git pull`을 먼저 실행한다. 버튼이 보이지 않으면 `Macros > Macro Development`에서 `register_libraries.lym`을 한 번 수동 실행한 뒤 `Tools` 메뉴를 다시 확인한다.
+
 ## 라이브러리 셀 수정이 필요할 때
 
 라이브러리로 등록된 셀은 master.oas에서 직접 편집할 수 없다 (read-only 참조). 목적에 따라 아래 세 가지 방법을 택한다.
@@ -68,3 +70,4 @@ git push
 | KLayout 시작 시 라이브러리 없음 | 매크로 미등록 | Macro Development에서 `macros/` 경로 추가 후 재시작 |
 | 셀 배치 후 내용이 비어 있음 | LFS 포인터 파일 | `git lfs pull` 실행 |
 | 레이어 색상이 다름 | `tech/layers.lyp` 미적용 | `Edit > Layer Properties > Load` → `tech/layers.lyp` 선택 |
+| `Reload Libraries` 클릭 후 변화 없음 | git pull 미실행 또는 메뉴 등록 지연 | `git pull` 후 Reload, 버튼이 없으면 매크로 수동 실행 |
