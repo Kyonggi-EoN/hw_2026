@@ -72,6 +72,7 @@ git pull
 ```
 
 > **주의:** `Reload Libraries` 전에 반드시 `git pull`을 먼저 실행해야 최신 파일이 반영된다.
+> 버튼이 보이지 않으면 `Macros > Macro Development`에서 `register_libraries.lym`을 한 번 수동 실행한 뒤 `Tools` 메뉴를 다시 확인한다.
 
 ---
 
@@ -83,3 +84,4 @@ git pull
 | `"파일이 너무 작습니다"` 로그 | Git LFS 미설치 | `git lfs install && git lfs pull` |
 | 레이어 색상이 다름 | `tech/layers.lyp` 미적용 | `Edit > Layer Properties > Load` → `tech/layers.lyp` 선택 |
 | Reload 후에도 변경사항 없음 | git pull 미실행 | `git pull` 먼저 실행 후 다시 Reload |
+| `Reload Libraries` 버튼이 없음 | 메뉴 등록 전 main window 미준비 | Macro Development에서 `register_libraries.lym` 수동 실행 |
