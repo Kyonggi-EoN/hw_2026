@@ -10,22 +10,21 @@
  <menu-path/>
  <interpreter>python</interpreter>
  <dsl-interpreter-name/>
- <text><![CDATA[
+ <text>
 import sys
 import os
 import pya
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-from lib_utils import find_repo_root, get_library_groups, LFS_POINTER_MAX_BYTES
+from lib_utils import find_repo_root, get_layout_files, LFS_POINTER_MAX_BYTES
 
+# 라이브러리를 검색할 대상 최상위 폴더 목록
 TARGET_FOLDERS = ["layouts", "master", "master2"]
-MENU_ACTION_PATH = "tools_menu.reload_libraries_action"
-MENU_RETRY_LIMIT = 10
+
 _reload_action = None
-_reload_in_progress = False
-_menu_retry_count = 0
-_kept_libraries = {}
+# [핵심 수정 1] KLayout 크래시 방지를 위해 라이브러리 객체의 참조를 유지하는 전역 딕셔너리
+_kept_libraries = {}  
 
 
 def _get_layouts_dirs():
@@ -37,93 +36,24 @@ def _get_layouts_dirs():
     return repo_root, target_dirs
 
 
-def _warn(message):
-    pya.Logger.warn(f"register_libraries: {message}")
-
-
-def _error(message):
-    pya.Logger.error(f"register_libraries: {message}")
-
-
-def _info(message):
-    pya.Logger.info(f"register_libraries: {message}")
-
-
-def _copy_file_cells(layout, filepath):
-    filename = Path(filepath).name
-    try:
-        file_size = os.path.getsize(filepath)
-    except Exception as e:
-        _error(f"{filename} 크기 확인 실패: {e}")
-        return 0, 0, 1
-
-    if file_size < LFS_POINTER_MAX_BYTES:
-        _warn(f"{filename} 파일이 너무 작아 건너뜁니다. Git LFS 파일인지 확인하세요.")
-        return 0, 1, 0
-
-    tmp_layout = pya.Layout()
-    try:
-        tmp_layout.read(filepath)
-    except Exception as e:
-        _error(f"{filename} 읽기 실패: {e}")
-        return 0, 0, 1
-
-    top_cells = list(tmp_layout.top_cells())
-    if not top_cells:
-        _warn(f"{filename} 최상위 셀이 없어 건너뜁니다.")
-        return 0, 1, 0
-
-    target_cell_name = Path(filepath).stem
-    for tmp_tc in top_cells:
-        if len(top_cells) == 1:
-            new_name = target_cell_name
-        else:
-            new_name = f"{target_cell_name}_{tmp_tc.name}"
-
-        new_cell = layout.create_cell(new_name)
-        new_cell.copy_tree(tmp_tc)
-
-    return 1, 0, 0
-
-
-def _refresh_registered_libraries(registered):
-    for lib_name in registered:
-        lib = _kept_libraries.get(lib_name)
-        if lib is None:
-            lib = pya.Library.library_by_name(lib_name)
-        if lib is None:
-            _warn(f"{lib_name} 라이브러리를 refresh할 수 없습니다.")
+def _get_library_groups(target_dirs):
+    """
+    대상 폴더 및 하위 폴더를 탐색하여 '파일의 바로 상위 폴더명'을 라이브러리 이름으로 지정합니다.
+    """
+    groups = {}
+    for base_dir in target_dirs:
+        if not os.path.isdir(base_dir):
             continue
-
-        refresh = getattr(lib, "refresh", None)
-        if not callable(refresh):
-            _warn(f"{lib_name} 라이브러리는 refresh API를 지원하지 않습니다.")
-            continue
-
-        try:
-            refresh()
-        except Exception as e:
-            _error(f"{lib_name} 라이브러리 refresh 실패: {e}")
-
-    refresh_all = getattr(pya.Library, "refresh_all", None)
-    if callable(refresh_all):
-        try:
-            refresh_all()
-        except Exception as e:
-            _warn(f"전체 라이브러리 refresh 실패: {e}")
-
-
-def _update_open_views():
-    try:
-        mw = pya.Application.instance().main_window()
-        if mw is None:
-            return
-        for i in range(mw.views()):
-            view = mw.view(i)
-            if view is not None:
-                view.update_content()
-    except Exception as e:
-        _warn(f"열린 view 갱신 중 오류: {e}")
+            
+        for root, dirs, files in os.walk(base_dir):
+            layout_files = get_layout_files(root)
+            if layout_files:
+                lib_name = Path(root).name
+                if lib_name not in groups:
+                    groups[lib_name] = []
+                groups[lib_name].extend(layout_files)
+                
+    return groups
 
 
 def register_libraries():
@@ -132,73 +62,86 @@ def register_libraries():
         pya.Logger.error("register_libraries: 저장소 루트를 찾을 수 없습니다.")
         return []
 
-    library_groups = get_library_groups(layouts_dirs)
+    library_groups = _get_library_groups(layouts_dirs)
 
     if not library_groups:
-        _warn("지정된 폴더에 유효한 파일이 없습니다.")
+        pya.Logger.warn(f"register_libraries: 지정된 폴더에 유효한 파일이 없습니다.")
         return []
 
     registered = []
     
     for lib_name, filepaths in library_groups.items():
-        valid_files_count = 0
-        skipped_files_count = 0
-        failed_files_count = 0
         try:
             lib = pya.Library()
             layout = lib.layout()
+            valid_files_count = 0
             
             for filepath in filepaths:
-                valid, skipped, failed = _copy_file_cells(layout, filepath)
-                valid_files_count += valid
-                skipped_files_count += skipped
-                failed_files_count += failed
+                file_size = os.path.getsize(filepath)
+                if file_size < LFS_POINTER_MAX_BYTES:
+                    pya.Logger.error(f"register_libraries: {Path(filepath).name} — 파일이 너무 작습니다.")
+                    continue
+
+                # GDS / OASIS 파일의 이름 (확장자 제외)
+                target_cell_name = Path(filepath).stem
+                
+                # 1. 파일 읽기 '전'의 최상위 셀 이름들을 안전하게 문자열로 기억
+                existing_top_names = {c.name for c in layout.top_cells()}
+
+                # 2. 파일 읽기 (보통 'TOP' 이라는 이름으로 들어옴)
+                layout.read(filepath)
+                
+                # 3. 방금 읽어 들여서 '새롭게 추가된' 최상위 셀들만 필터링
+                new_top_cells = [c for c in layout.top_cells() if c.name not in existing_top_names]
+                
+                for tc in new_top_cells:
+                    # 4. 추가된 셀의 이름을 GDS 파일명으로 즉시 변경
+                    if len(new_top_cells) == 1:
+                        tc.name = target_cell_name
+                    else:
+                        # 한 파일 안에 최상위 셀이 여러 개일 경우를 대비한 충돌 방지
+                        tc.name = f"{target_cell_name}_{tc.name}"
+                
+                valid_files_count += 1
             
             if valid_files_count > 0:
-                lib.description = lib_name
+                lib.name = lib_name
                 lib.register(lib_name)
-                _kept_libraries[lib_name] = lib
-                _info(
-                    f"등록 완료 — {lib_name} "
-                    f"(등록 {valid_files_count}개, 건너뜀 {skipped_files_count}개, 실패 {failed_files_count}개)"
-                )
+                pya.Logger.info(f"register_libraries: 등록 완료 — {lib_name} (총 {valid_files_count}개 셀)")
                 registered.append(lib_name)
-            else:
-                _warn(
-                    f"{lib_name} 라이브러리에 등록할 파일이 없습니다. "
-                    f"(건너뜀 {skipped_files_count}개, 실패 {failed_files_count}개)"
-                )
                 
         except Exception as e:
-            _error(f"등록 실패 — {lib_name} 라이브러리 처리 중 오류: {e}")
+            pya.Logger.error(f"register_libraries: 등록 실패 — {lib_name} 라이브러리 생성 중 오류: {e}")
 
     lyp_path = os.path.join(repo_root, "tech", "layers.lyp")
     if os.path.isfile(lyp_path):
-        _info("tech/layers.lyp 적용 안내.")
+        pya.Logger.info("register_libraries: tech/layers.lyp 적용 안내.")
 
     return registered
 
 
 def reload_libraries():
-    global _reload_in_progress
-    if _reload_in_progress:
-        _warn("이미 라이브러리 재로드가 진행 중입니다.")
-        return
-
     repo_root, layouts_dirs = _get_layouts_dirs()
     if repo_root is None:
         pya.MessageBox.warning("Reload Libraries", "저장소 루트를 찾을 수 없습니다.", pya.MessageBox.Ok)
         return
 
-    _reload_in_progress = True
-    registered = []
-    
+    library_groups = _get_library_groups(layouts_dirs)
+
+    for lib_name in library_groups.keys():
+        existing = pya.Library.library_by_name(lib_name)
+        if existing:
+            existing.delete()
+
+    registered = register_libraries()
+
     try:
-        registered = register_libraries()
-        _refresh_registered_libraries(registered)
-        _update_open_views()
-    finally:
-        _reload_in_progress = False
+        mw = pya.Application.instance().main_window()
+        if mw is not None:
+            for i in range(mw.views()):
+                mw.view(i).update_content()
+    except Exception:
+        pass
 
     if registered:
         pya.MessageBox.info(
@@ -215,43 +158,25 @@ def reload_libraries():
 
 
 def _add_reload_menu():
-    global _reload_action, _menu_retry_count
+    global _reload_action
     if _reload_action is not None:
-        _reload_action.title = "Reload Libraries"
-        _reload_action.on_triggered = reload_libraries
         return
-
     try:
         mw = pya.Application.instance().main_window()
+        # KLayout 시작 시 메인 윈도우가 아직 완전히 로드되지 않은 상태에 대한 예외 처리
         if mw is None:
-            if _menu_retry_count < MENU_RETRY_LIMIT and hasattr(pya, "QTimer"):
-                _menu_retry_count += 1
-                pya.QTimer.singleShot(500, _add_reload_menu)
-            else:
-                _warn("메인 윈도우가 준비되지 않아 메뉴 등록을 건너뜁니다.")
-            return
-
+            return  
         menu = mw.menu()
-        action = None
-        try:
-            action = menu.action(MENU_ACTION_PATH)
-        except Exception:
-            action = None
-
-        if action is None:
-            action = pya.Action()
-            menu.insert_item("tools_menu.end", "reload_libraries_action", action)
-
+        action = pya.Action()
         action.title = "Reload Libraries"
         action.on_triggered = reload_libraries
+        menu.insert_item("tools_menu.end", "reload_libraries_action", action)
         _reload_action = action
-        _menu_retry_count = 0
     except Exception as e:
-        _error(f"메뉴 등록 실패 — {e}")
+        pya.Logger.error(f"register_libraries: 메뉴 등록 실패 — {e}")
 
 
-_startup_registered = register_libraries()
-_refresh_registered_libraries(_startup_registered)
+register_libraries()
 _add_reload_menu()
  ]]></text>
 </klayout-macro>
