@@ -3,6 +3,10 @@ register_libraries.lym의 순수 Python 유틸리티 함수 단위 테스트.
 pya 없이 실행 가능한 로직만 테스트한다.
 """
 import os
+from pathlib import Path
+from xml.etree import ElementTree as ET
+
+import lib_utils
 import pytest
 
 from lib_utils import (
@@ -99,3 +103,48 @@ class TestGetLayoutFiles:
     def test_nonexistent_dir_returns_empty_list(self):
         result = get_layout_files("/nonexistent/path/layouts")
         assert result == []
+
+
+class TestGetLibraryGroups:
+    def test_groups_layout_files_by_containing_directory(self, tmp_path):
+        layouts = tmp_path / "layouts"
+        team = tmp_path / "master" / "TEAM1"
+        nested = tmp_path / "master2" / "1t"
+        layouts.mkdir()
+        team.mkdir(parents=True)
+        nested.mkdir(parents=True)
+        (layouts / "chip.oas").write_bytes(b"\x00" * 300)
+        (layouts / "chip.gds").write_bytes(b"\x00" * 300)
+        (team / "amp.gds").write_bytes(b"\x00" * 300)
+        (nested / "core.gds").write_bytes(b"\x00" * 300)
+
+        result = lib_utils.get_library_groups([str(layouts), str(tmp_path / "master"), str(tmp_path / "master2")])
+
+        assert sorted(result) == ["1t", "TEAM1", "layouts"]
+        assert [Path(p).name for p in result["layouts"]] == ["chip.oas"]
+        assert [Path(p).name for p in result["TEAM1"]] == ["amp.gds"]
+        assert [Path(p).name for p in result["1t"]] == ["core.gds"]
+
+
+class TestRegisterLibrariesMacro:
+    def _macro_text(self):
+        macro_path = Path(__file__).resolve().parents[1] / "macros" / "register_libraries.lym"
+        return ET.parse(macro_path).getroot().find("text").text
+
+    def test_macro_avoids_runtime_library_deletion_patterns(self):
+        macro_text = self._macro_text()
+
+        assert "delete(" not in macro_text
+        assert "unregister(" not in macro_text
+        assert "assign(pya.Layout())" not in macro_text
+
+    def test_macro_text_compiles_as_python(self):
+        macro_text = self._macro_text()
+
+        compile(macro_text, "macros/register_libraries.lym:text", "exec")
+
+    def test_macro_keeps_registered_library_references(self):
+        macro_text = self._macro_text()
+
+        assert "_kept_libraries" in macro_text
+        assert "_kept_libraries[lib_name] = lib" in macro_text
