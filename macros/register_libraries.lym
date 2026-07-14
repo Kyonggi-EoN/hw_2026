@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <klayout-macro>
  <description>KLayout Library Registration</description>
+ <version/>
+ <category/>
+ <prolog/>
+ <epilog/>
+ <doc/>
  <autorun>true</autorun>
  <autorun-early>false</autorun-early>
  <priority>0</priority>
@@ -10,7 +15,7 @@
  <menu-path/>
  <interpreter>python</interpreter>
  <dsl-interpreter-name/>
- <text><![CDATA[
+ <text>
 import sys
 import os
 import pya
@@ -19,7 +24,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 from lib_utils import find_repo_root, get_library_groups, LFS_POINTER_MAX_BYTES
 
-TARGET_FOLDERS = ["layouts", "master", "master2"]
+TARGET_FOLDERS = ["layouts", "master2"]
 MENU_ACTION_PATH = "tools_menu.reload_libraries_action"
 MENU_RETRY_LIMIT = 10
 _reload_action = None
@@ -57,7 +62,7 @@ def _copy_file_cells(layout, filepath):
         _error(f"{filename} 크기 확인 실패: {e}")
         return 0, 0, 1
 
-    if file_size < LFS_POINTER_MAX_BYTES:
+    if file_size &lt; LFS_POINTER_MAX_BYTES:
         _warn(f"{filename} 파일이 너무 작아 건너뜁니다. Git LFS 파일인지 확인하세요.")
         return 0, 1, 0
 
@@ -154,7 +159,7 @@ def register_libraries():
                 skipped_files_count += skipped
                 failed_files_count += failed
             
-            if valid_files_count > 0:
+            if valid_files_count &gt; 0:
                 lib.description = lib_name
                 lib.register(lib_name)
                 _kept_libraries[lib_name] = lib
@@ -224,7 +229,7 @@ def _add_reload_menu():
     try:
         mw = pya.Application.instance().main_window()
         if mw is None:
-            if _menu_retry_count < MENU_RETRY_LIMIT and hasattr(pya, "QTimer"):
+            if _menu_retry_count &lt; MENU_RETRY_LIMIT and hasattr(pya, "QTimer"):
                 _menu_retry_count += 1
                 pya.QTimer.singleShot(500, _add_reload_menu)
             else:
@@ -253,5 +258,5 @@ def _add_reload_menu():
 _startup_registered = register_libraries()
 _refresh_registered_libraries(_startup_registered)
 _add_reload_menu()
- ]]></text>
+ </text>
 </klayout-macro>
