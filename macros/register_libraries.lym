@@ -21,10 +21,10 @@ import os
 import pya
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.rgealpath(__file__)))
 from lib_utils import find_repo_root, get_library_groups, LFS_POINTER_MAX_BYTES
 
-TARGET_FOLDERS = ["layouts", "master3"]
+TARGET_FOLDERS = ["master2", "master3"]
 MENU_ACTION_PATH = "tools_menu.reload_libraries_action"
 MENU_RETRY_LIMIT = 10
 _reload_action = None
