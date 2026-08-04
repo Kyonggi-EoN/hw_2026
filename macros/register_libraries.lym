@@ -21,8 +21,8 @@ import os
 import pya
 from pathlib import Path
 
-sys.path.insert(0, os.path.dirname(os.path.rgealpath(__file__)))
-from lib_utils import find_repo_root, get_library_groups, LFS_POINTER_MAX_BYTES
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+from lib_utils import find_repo_root, get_library_groups, is_lfs_pointer
 
 TARGET_FOLDERS = ["master2", "master3"]
 MENU_ACTION_PATH = "tools_menu.reload_libraries_action"
@@ -62,8 +62,8 @@ def _copy_file_cells(layout, filepath):
         _error(f"{filename} 크기 확인 실패: {e}")
         return 0, 0, 1
 
-    if file_size &lt; LFS_POINTER_MAX_BYTES:
-        _warn(f"{filename} 파일이 너무 작아 건너뜁니다. Git LFS 파일인지 확인하세요.")
+    if is_lfs_pointer(filepath):
+        _warn(f"{filename} 파일이 Git LFS 포인터라 건너뜁니다. git lfs pull을 실행하세요.")
         return 0, 1, 0
 
     tmp_layout = pya.Layout()

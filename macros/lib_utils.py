@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 
 LFS_POINTER_MAX_BYTES = 200  # Git LFS pointer files are ~150 bytes
+LFS_POINTER_HEADER = b"version https://git-lfs.github.com/spec/v1"
 
 
 def find_repo_root(start):
@@ -16,7 +17,11 @@ def find_repo_root(start):
 
 
 def is_lfs_pointer(filepath):
-    return os.path.getsize(filepath) < LFS_POINTER_MAX_BYTES
+    if os.path.getsize(filepath) >= LFS_POINTER_MAX_BYTES:
+        return False
+
+    with open(filepath, "rb") as file:
+        return file.readline().rstrip(b"\r\n") == LFS_POINTER_HEADER
 
 
 def get_layout_files(layouts_dir):
