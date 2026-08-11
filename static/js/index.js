@@ -133,7 +133,10 @@ $(document).ready(function() {
     }
 
 	// Initialize all div with carousel class
-    var carousels = bulmaCarousel.attach('.carousel', options);
+    // .no-autoplay 가 붙은 캐러셀은 사용자가 화살표로 직접 넘기도록 자동재생을 끈다
+    var carousels = bulmaCarousel.attach('.carousel:not(.no-autoplay)', options);
+    var manualCarousels = bulmaCarousel.attach('.carousel.no-autoplay',
+        Object.assign({}, options, { autoplay: false }));
 	
     bulmaSlider.attach();
     

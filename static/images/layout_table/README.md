@@ -1,0 +1,1 @@
+해당 사진들은 각 셀에 들어가는 소자의 정보(W/L, Beta, misalignment offset, in)를 엑셀형식으로 정리하여 정리한 표이다.
