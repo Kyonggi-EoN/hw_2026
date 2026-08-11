@@ -120,6 +120,30 @@ function setupVideoCarouselAutoplay() {
     });
 }
 
+// 가로로 넘치는 표에만 스크롤 페이드를 붙인다.
+// (표가 다 들어오면 래퍼도 클래스도 생기지 않으므로 데스크톱 렌더는 그대로)
+function setupTableScrollHints() {
+    document.querySelectorAll('.table-scroll').forEach(function(el) {
+        var box = el.parentElement;
+        if (!box || !box.classList.contains('table-scroll-box')) {
+            box = document.createElement('div');
+            box.className = 'table-scroll-box';
+            el.parentNode.insertBefore(box, el);
+            box.appendChild(el);
+        }
+
+        function update() {
+            var overflow = el.scrollWidth - el.clientWidth;
+            box.classList.toggle('is-scrollable', overflow > 2);
+            box.classList.toggle('is-scroll-end', overflow > 2 && el.scrollLeft >= overflow - 2);
+        }
+
+        el.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('resize', update);
+        update();
+    });
+}
+
 $(document).ready(function() {
     // Check for click events on the navbar burger icon
 
@@ -142,5 +166,7 @@ $(document).ready(function() {
     
     // Setup video autoplay for carousel
     setupVideoCarouselAutoplay();
+
+    setupTableScrollHints();
 
 })

@@ -36,6 +36,11 @@ body {
   background-color: var(--background-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* 한글은 어절 단위로 끊는다. keep-all 이 없으면 좁은 화면에서
+     '시뮬레/이션', '레이아/웃' 처럼 단어 중간이 잘린다.
+     break-word 를 같이 줘서 긴 영문/수식 토큰은 그대로 넘치지 않게 한다. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 
@@ -267,6 +272,7 @@ body {
 }
 
 .results-carousel {
+  max-width: 100%;
   overflow: hidden;
   padding: 1rem 0;
 }
@@ -348,6 +354,9 @@ body {
   font-size: 1.1rem;
   line-height: 1.8;
   color: var(--text-secondary);
+  /* 한글은 하이픈으로 쪼갤 수 없어, keep-all 과 양쪽정렬이 겹치면
+     어절 사이가 크게 벌어진다. 국문 본문은 왼쪽 정렬이 안정적이다. */
+  text-align: left !important;
 }
 
 .content.has-text-justified p {
@@ -656,8 +665,8 @@ code {
   }
   
   .results-carousel .item {
-    margin: 0.5rem;
-    padding: 1rem;
+    margin: 0.25rem;
+    padding: 0.75rem;
   }
   
   .teaser .hero-body {
@@ -802,7 +811,7 @@ a:focus {
 
 @media screen and (max-width: 520px) {
   .toc-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -853,6 +862,7 @@ a:focus {
 
 .fig a {
   display: block;
+  position: relative;
 }
 
 .fig img {
@@ -936,7 +946,7 @@ a:focus {
 
 @media screen and (max-width: 900px) {
   .fig-aside {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -970,6 +980,11 @@ a:focus {
   margin: 2rem 0;
 }
 
+.fig-duo-item {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .fig-duo-item > :first-child {
   margin-top: 0;
 }
@@ -984,8 +999,11 @@ a:focus {
 }
 
 @media screen and (max-width: 900px) {
+  /* 1fr(= minmax(auto,1fr)) 로 두면 캐러셀 내부의 slider-container 실제 폭까지
+     트랙이 늘어나, 뒤에 초기화되는 캐러셀이 부풀려진 폭을 기준으로 잡힌다.
+     반드시 minmax(0, 1fr) 로 최소 크기를 0 으로 고정한다. */
   .fig-duo {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .fig-duo .fig-strip {
@@ -995,7 +1013,7 @@ a:focus {
 
 @media screen and (max-width: 520px) {
   .fig-duo .fig-strip {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -1007,7 +1025,7 @@ a:focus {
 
 @media screen and (max-width: 520px) {
   .fig-strip {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -1021,14 +1039,103 @@ a:focus {
   .fig-grid,
   .fig-grid.is-2col,
   .fig-grid.is-3col {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
-/* 넓은 표 가로 스크롤 */
+/* 넓은 표 가로 스크롤.
+   .hero 가 overflow:hidden 이라, 감싸지 않은 표는 좁은 화면에서 잘린 뒤
+   가로 스크롤로 되돌릴 수 없다. 표는 항상 이 래퍼 안에 넣는다. */
 .table-scroll {
+  max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  margin: 1.5rem 0;
+}
+
+/* 표가 실제로 넘칠 때만 오른쪽 끝에 페이드를 띄워 '더 있다'를 알린다.
+   래퍼와 클래스는 index.js 가 붙인다 (넘치지 않으면 아무것도 생기지 않으므로
+   표가 다 들어오는 데스크톱에서는 렌더 결과가 그대로다). */
+.table-scroll-box {
+  position: relative;
+}
+
+.table-scroll-box::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 2.75rem;
+  background: linear-gradient(to left, var(--background-primary) 15%, rgba(255, 255, 255, 0));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.table-scroll-box.is-scrollable::after {
+  opacity: 1;
+}
+
+.table-scroll-box.is-scroll-end::after {
+  opacity: 0;
+}
+
+/* 표 안이 회색 배경인 섹션(.hero.is-light)에서는 페이드 색을 맞춘다 */
+.hero.is-light .table-scroll-box::after {
+  background: linear-gradient(to left, var(--background-secondary) 15%, rgba(248, 250, 252, 0));
+}
+
+.content .table-scroll > .table,
+.table-scroll > .table {
+  margin-bottom: 0;
+}
+
+.publication-data-table {
+  font-variant-numeric: tabular-nums;
+}
+
+.publication-data-table caption {
+  caption-side: top;
+  padding: 0 0 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.publication-data-table thead th {
+  vertical-align: middle;
+}
+
+.publication-data-table tbody th {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.publication-table-note {
+  margin: -0.75rem 0 2rem;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+/* 숫자 위주의 표는 좁은 화면에서 한 단어씩 쪼개지지 않게 가로 스크롤로 넘긴다 */
+@media screen and (max-width: 768px) {
+  .table-scroll.is-nowrap > .table td,
+  .table-scroll.is-nowrap > .table th {
+    white-space: nowrap;
+  }
+
+  .publication-data-table {
+    font-size: 0.82rem;
+  }
+
+  .publication-data-table td,
+  .publication-data-table th {
+    padding: 0.5em 0.6em;
+  }
 }
 
 /* 요약 수치 카드 */
@@ -1121,5 +1228,94 @@ a:focus {
 
   .hero-logo {
     height: 40px;
+  }
+}
+
+
+/* ===================================================================
+   모바일 다듬기.
+   아래 규칙은 전부 미디어 쿼리 안에 있으므로 데스크톱(>768px)에서는
+   적용 자체가 되지 않는다. 데스크톱 레이아웃은 건드리지 않는다.
+   =================================================================== */
+@media screen and (max-width: 768px) {
+  /* 1. 가로 여백 회수: Bulma .section 의 1.5rem 좌우 패딩을 1rem 으로.
+        360px 기준 콘텐츠 폭 312px -> 328px */
+  .section {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* 2. 제목은 뷰포트 폭에 따라 부드럽게. 320px 에서도 두 줄 안에 들어온다 */
+  .publication-title {
+    font-size: clamp(1.55rem, 7.2vw, 2.5rem) !important;
+  }
+
+  .title.is-3 {
+    font-size: 1.5rem !important;
+  }
+
+  /* 3. 히어로 로고 행: [로고][버튼 세로 스택][로고] 3분할을
+        [로고 로고] / [버튼] 두 줄로 바꾼다 */
+  .hero-logo-row {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .hero-logo {
+    order: 1;
+  }
+
+  .hero-logo-row .publication-links {
+    order: 2;
+    flex: 1 0 100%;
+    margin-top: 0.5rem;
+  }
+
+  /* 4. 터치 타깃 최소 44px */
+  .button {
+    min-height: 44px;
+  }
+
+  /* 6. 캐러셀 안쪽 여백 축소 (item 여백은 위 768px 블록에서 함께 줄임) */
+  .results-carousel {
+    padding: 0.5rem 0;
+  }
+
+  .results-carousel .subtitle {
+    font-size: 0.9rem !important;
+    margin-top: 0.6rem;
+  }
+
+  /* 7. 원본 해상도가 큰 그림은 축소되면 축 라벨을 읽을 수 없다.
+        탭하면 원본이 열린다는 것을 알려주는 배지 */
+  .fig a[target="_blank"]::after {
+    content: "원본 \2197";
+    position: absolute;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    pointer-events: none;
+  }
+
+  /* 원본이 작은 이미지는 가운데 정렬되므로, 배지가 그림에 붙도록
+     링크 상자를 이미지 폭에 맞춘다 */
+  .fig-fit a {
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  /* .button { width: 100% } 과 좌우 4px 마진이 겹쳐 8px 넘치던 것 */
+  .link-block a {
+    margin: 8px 0;
   }
 }
