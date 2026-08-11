@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- ===== 메타 정보 ===== -->
+  <!-- TODO: 실제 프로젝트 제목으로 교체 -->
+  <meta name="title" content="IGZO TFT 설계 및 레이아웃 프로젝트 - 경기대학교 EoN">
+  <!-- TODO: 150~160자 내외의 프로젝트 소개 문구로 교체 -->
+  <meta name="description" content="경기대학교 EoN 팀의 IGZO TFT 기반 소자·회로 레이아웃 설계 프로젝트. KLayout으로 트랜지스터, 인버터, 증폭기, 정렬 마크를 설계하고 하나의 마스터 레이아웃으로 통합했습니다.">
+  <meta name="keywords" content="IGZO, TFT, 반도체 레이아웃, KLayout, GDSII, 산화물 반도체, 인버터, 증폭기, 정렬 마크, 경기대학교">
+  <!-- TODO: 대표 저자/팀 이름 확인 -->
+  <meta name="author" content="Kyonggi University EoN">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="Korean">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Kyonggi University EoN">
+  <meta property="og:title" content="IGZO TFT 설계 및 레이아웃 프로젝트">
+  <meta property="og:description" content="경기대학교 EoN 팀의 IGZO TFT 기반 소자·회로 레이아웃 설계 프로젝트.">
+  <meta property="og:url" content="https://kyonggi-eon.github.io/hw_2026/">
+  <!-- TODO: 1200x630px 미리보기 이미지를 static/images/social_preview.png 로 추가하면 아래가 동작합니다 -->
+  <meta property="og:image" content="https://kyonggi-eon.github.io/hw_2026/static/images/social_preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="IGZO TFT 설계 및 레이아웃 프로젝트">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="IGZO TFT 설계 및 레이아웃 프로젝트">
+  <meta name="twitter:description" content="경기대학교 EoN 팀의 IGZO TFT 기반 소자·회로 레이아웃 설계 프로젝트.">
+  <meta name="twitter:image" content="https://kyonggi-eon.github.io/hw_2026/static/images/social_preview.png">
+
+  <!-- Additional SEO -->
+  <meta name="theme-color" content="#2563eb">
+  <meta name="msapplication-TileColor" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://ajax.googleapis.com">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+  <!-- TODO: 실제 프로젝트 제목으로 교체 -->
+  <title>IGZO TFT 설계 및 레이아웃 프로젝트 | 경기대학교 EoN</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
+  <link rel="apple-touch-icon" href="static/images/favicon.ico">
+
+  <!-- Critical CSS -->
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+
+  <!-- Non-critical CSS -->
+  <link rel="preload" href="static/css/bulma-carousel.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="static/css/bulma-slider.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" href="static/css/fontawesome.all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
+    <link rel="stylesheet" href="static/css/bulma-slider.min.css">
+    <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+  </noscript>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Deferred JavaScript -->
+  <script defer src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script defer src="static/js/bulma-carousel.min.js"></script>
+  <script defer src="static/js/bulma-slider.min.js"></script>
+  <script defer src="static/js/index.js"></script>
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ScholarlyArticle",
+    "headline": "IGZO TFT 설계 및 레이아웃 프로젝트",
+    "description": "경기대학교 EoN 팀의 IGZO TFT 기반 소자·회로 레이아웃 설계 프로젝트.",
+    "datePublished": "2026-01-01",
+    "url": "https://kyonggi-eon.github.io/hw_2026/",
+    "keywords": ["IGZO", "TFT", "Semiconductor Layout", "KLayout", "GDSII"],
+    "isAccessibleForFree": true,
+    "license": "https://creativecommons.org/licenses/by/4.0/"
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Scroll to Top Button -->
+  <button class="scroll-to-top" onclick="scrollToTop()" title="맨 위로" aria-label="맨 위로">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <main id="main-content">
+
+  <!-- ===== Hero ===== -->
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <!-- TODO: 실제 프로젝트 제목으로 교체 -->
+            <h1 class="title is-1 publication-title">IGZO TFT 설계 및 레이아웃 프로젝트</h1>
+            <!-- TODO: 부제가 필요 없으면 아래 줄 삭제 -->
+            <h2 class="subtitle is-4">KLayout 기반 소자·회로 레이아웃 설계와 마스터 통합</h2>
+
+            <div class="is-size-5 publication-authors">
+              <!-- TODO: 각 이름의 href 에 개인 GitHub/블로그 링크를 넣거나, 링크가 없으면 <a> 태그를 지우세요 -->
+              <span class="author-block">강예찬,</span>
+              <span class="author-block">김지혁,</span>
+              <span class="author-block">도해민,</span>
+              <span class="author-block">박모세,</span>
+              <span class="author-block">박찬홍,</span>
+              <span class="author-block">이다민,</span>
+              <span class="author-block">이영아,</span>
+              <span class="author-block">이재원,</span>
+              <span class="author-block">조민균,</span>
+              <span class="author-block">조수아,</span>
+              <span class="author-block">최지원,</span>
+              <span class="author-block">홍재민</span>
+            </div>
+
+            <div class="is-size-5 publication-authors">
+              <!-- TODO: 학과명/과목명/연도 확인 후 수정 -->
+              <span class="author-block">경기대학교 EoN<br>2026학년도 프로젝트</span>
+            </div>
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <!-- GitHub 저장소 -->
+                <span class="link-block">
+                  <a href="https://github.com/Kyonggi-EoN/hw_2026" target="_blank"
+                     class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="fab fa-github"></i></span>
+                    <span>Repository</span>
+                  </a>
+                </span>
+
+                <!-- TODO: 보고서 PDF 를 static/pdfs/report.pdf 로 올린 뒤 아래 주석을 해제하세요
+                <span class="link-block">
+                  <a href="static/pdfs/report.pdf" target="_blank"
+                     class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                    <span>보고서</span>
+                  </a>
+                </span>
+                -->
+
+                <!-- TODO: 최종 GDS 다운로드 링크가 필요하면 주석을 해제하고 경로를 확인하세요
+                <span class="link-block">
+                  <a href="https://github.com/Kyonggi-EoN/hw_2026/tree/main/master" target="_blank"
+                     class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon"><i class="fas fa-microchip"></i></span>
+                    <span>마스터 레이아웃</span>
+                  </a>
+                </span>
+                -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 티저 이미지 / 영상 =====
+       TODO: 대표 레이아웃 스크린샷을 static/images/teaser.png 로 올린 뒤 아래 주석을 해제하세요.
+             영상으로 하려면 <img> 대신 템플릿의 <video> 블록을 쓰면 됩니다.
+  <section class="hero teaser">
+    <div class="container is-max-desktop">
+      <div class="hero-body">
+        <img src="static/images/teaser.png" alt="마스터 레이아웃 전경">
+        <h2 class="subtitle has-text-centered">
+          TODO: 티저 이미지 설명을 적으세요.
+        </h2>
+      </div>
+    </div>
+  </section>
+  -->
+
+  <!-- ===== 개요 ===== -->
+  <section class="section hero is-light">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">개요</h2>
+          <div class="content has-text-justified">
+            <!-- TODO: 아래 문단을 실제 프로젝트 개요로 교체하세요 -->
+            <p>
+              본 프로젝트는 IGZO(In-Ga-Zn-O) 산화물 반도체 박막 트랜지스터를 대상으로,
+              단위 소자에서 시작해 인버터와 증폭기 회로까지 레이아웃을 직접 설계하고
+              하나의 마스터 레이아웃으로 통합하는 것을 목표로 합니다.
+              팀원 각자가 담당 블록을 개별 GDSII/OASIS 파일로 작업하고,
+              KLayout 매크로가 이를 셀 라이브러리로 자동 등록하면
+              통합 담당자가 마스터 파일에서 블록을 배치·배선해 최종 산출물을 관리합니다.
+            </p>
+            <p>
+              <!-- TODO: 이 문단에 프로젝트의 핵심 결과나 배운 점을 적으세요 -->
+              또한 채널 폭·길이와 오버랩 조건을 바꾼 소자군을 체계적으로 배치해
+              공정 편차와 설계 파라미터가 소자 특성에 미치는 영향을 비교할 수 있도록 구성했으며,
+              공정 정렬을 위한 다양한 형태의 정렬 마크를 함께 설계했습니다.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 진행 단계 ===== -->
+  <section class="section hero">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered">진행 단계</h2>
+      <!-- TODO: 주차별 내용을 실제 진행 상황에 맞게 수정하세요 -->
+      <div class="content">
+        <table class="table is-fullwidth is-striped">
+          <thead>
+            <tr><th style="width:20%">주차</th><th>내용</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Week 01</td><td>단위 트랜지스터 레이아웃 설계 및 소자 조사</td></tr>
+            <tr><td>Week 02–03</td><td>인버터 레이아웃 설계</td></tr>
+            <tr><td>Week 04</td><td>정렬 마크(align mark) 설계</td></tr>
+            <tr><td>Week 05</td><td>TCAD 시뮬레이션</td></tr>
+            <tr><td>Week 06</td><td>증폭기(AMP) 레이아웃 설계</td></tr>
+            <tr><td>통합</td><td>팀별 블록을 마스터 레이아웃으로 통합 및 배선</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 결과 이미지 캐러셀 =====
+       TODO: 레이아웃 스크린샷을 static/images/result1.png ... 로 올린 뒤 아래 주석을 해제하세요.
+             이미지 개수는 <div class="item"> 블록을 늘리거나 줄여서 맞추면 됩니다.
+  <section class="hero is-small">
+    <div class="hero-body">
+      <div class="container">
+        <h2 class="title is-3 has-text-centered">설계 결과</h2>
+        <div id="results-carousel" class="carousel results-carousel">
+          <div class="item">
+            <img src="static/images/result1.png" alt="단위 TFT 레이아웃" loading="lazy"/>
+            <h2 class="subtitle has-text-centered">단위 TFT 레이아웃</h2>
+          </div>
+          <div class="item">
+            <img src="static/images/result2.png" alt="인버터 레이아웃" loading="lazy"/>
+            <h2 class="subtitle has-text-centered">인버터 레이아웃</h2>
+          </div>
+          <div class="item">
+            <img src="static/images/result3.png" alt="정렬 마크" loading="lazy"/>
+            <h2 class="subtitle has-text-centered">정렬 마크</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  -->
+
+  <!-- ===== 발표 영상 =====
+       TODO: 유튜브에 발표 영상을 올린 뒤 VIDEO_ID 를 바꾸고 주석을 해제하세요.
+  <section class="hero is-small is-light">
+    <div class="hero-body">
+      <div class="container">
+        <h2 class="title is-3">발표 영상</h2>
+        <div class="columns is-centered has-text-centered">
+          <div class="column is-four-fifths">
+            <div class="publication-video">
+              <iframe src="https://www.youtube.com/embed/VIDEO_ID" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  -->
+
+  <!-- ===== 포스터 =====
+       TODO: 포스터 PDF 를 static/pdfs/poster.pdf 로 올린 뒤 주석을 해제하세요.
+  <section class="hero is-small is-light">
+    <div class="hero-body">
+      <div class="container">
+        <h2 class="title">포스터</h2>
+        <iframe src="static/pdfs/poster.pdf" width="100%" height="550"></iframe>
+      </div>
+    </div>
+  </section>
+  -->
+
+  <!-- ===== 팀 ===== -->
+  <section class="section hero is-light">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered">팀 구성</h2>
+      <!-- TODO: 팀별 담당자와 담당 블록을 채워 넣으세요 -->
+      <div class="content">
+        <table class="table is-fullwidth">
+          <thead>
+            <tr><th style="width:20%">팀</th><th style="width:40%">팀원</th><th>담당 블록</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>TEAM 1</td><td>TODO</td><td>TODO</td></tr>
+            <tr><td>TEAM 2</td><td>TODO</td><td>TODO</td></tr>
+            <tr><td>TEAM 3</td><td>TODO</td><td>TODO</td></tr>
+            <tr><td>TEAM 4</td><td>TODO</td><td>TODO</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 인용 ===== -->
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <div class="bibtex-header">
+        <h2 class="title">인용</h2>
+        <button class="copy-bibtex-btn" onclick="copyBibTeX()" title="클립보드에 복사">
+          <i class="fas fa-copy"></i>
+          <span class="copy-text">Copy</span>
+        </button>
+      </div>
+      <!-- TODO: 제목/저자/연도를 실제 값으로 수정하세요 -->
+      <pre id="bibtex-code"><code>@misc{KyonggiEoN2026,
+  title={IGZO TFT 설계 및 레이아웃 프로젝트},
+  author={경기대학교 EoN},
+  year={2026},
+  url={https://kyonggi-eon.github.io/hw_2026/}
+}</code></pre>
+    </div>
+  </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content">
+            <p>
+              This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a> which was adopted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+              You are free to borrow the source code of this website, we just ask that you link back to this page in the footer. <br> This website is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative
+              Commons Attribution-ShareAlike 4.0 International License</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
