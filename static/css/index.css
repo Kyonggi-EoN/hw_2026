@@ -1198,7 +1198,10 @@ a:focus {
 
 /* 원본 해상도가 유난히 큰 배치도 (Fig. 6 인버터 등)를 다른 그림과 균형 맞춰 축소 */
 .fig-fit-sm img {
-  max-width: 480px;
+  width: 100%;
+  max-width: 100%;
+  max-height: 480px;
+  object-fit: contain;
 }
 
 /* ===== 히어로 로고 (좌: 경기대 / 우: EoN) ===== */
