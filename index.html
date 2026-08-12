@@ -290,6 +290,9 @@
               정량 예측보다는 W/L·beta·게이트 오프셋 변화에 따른 <em>추세</em>를 미리 확인하고
               실측값 검토의 기준으로 삼았습니다.
             </p>
+            <p>
+              이번 공정을 통해 얻은 특성을 바탕으로 더 복잡한 회로설계 프로젝트를 계획하여 실행하고자 합니다
+            </P>
           </div>
         </div>
       </div>
@@ -307,7 +310,6 @@
           전체 레이어를 격자로 나누어 셀을 삽입하고, Task별로 사등분하여 같은 종류의 소자를 한곳에 몰아 배치했습니다.
           얼라인 마크는 중앙을 기준으로 십자 형태로 총 25개를 배치했으며,
           마스크 외곽 2.5&nbsp;mm에는 주석을 제외한 기능적인 부품을 배치하지 않았습니다.
-          기존 Single AMP 셀은 인버터로 대체했습니다.
         </p>
 
         <div class="fig-grid">
@@ -363,8 +365,8 @@
         </div>
         <h3 class="title is-5">블록별 배치도</h3>
         <p>
-          각 셀에 어떤 소자가 들어가는지(W/L, beta, 게이트 오정렬량)를 엑셀 형식의 표로 정리해
-          레이아웃 작업과 측정 시 셀을 찾는 기준표로 사용합니다.
+          각 셀에 어떤 소자가 들어가는지(W/L, beta, 게이트 오정렬량)를 엑셀 형식의 배치표로 정리하였습니다.
+          레이아웃 작업과 측정 시 이를 기준으로 작업합니다.
         </p>
 
         <div class="fig-grid">
@@ -406,9 +408,9 @@
           </figcaption>
         </figure>
 
-        <figure class="fig fig-fit">
-          <a href="static/images/layout_table/inverter_Layout_table_Based_on_Beta_Values.webp" target="_blank" rel="noopener">
-            <img src="static/images/layout_table/inverter_Layout_table_Based_on_Beta_Values.webp" loading="lazy" alt="beta 값 기반 인버터 배치표. 행은 Driver W/L, 열은 Load W/L, 셀은 beta 값">
+        <figure class="fig fig-fit fig-fit-sm">
+          <a href="static/images/layout_table/inverter_Layout_table.png" target="_blank" rel="noopener">
+            <img src="static/images/layout_table/inverter_Layout_table.png" loading="lazy" alt="beta 값 기반 인버터 배치표. 행은 Driver W/L, 열은 Load W/L, 셀은 beta 값">
           </a>
           <figcaption>
             <span class="fig-label">Fig. 6. Beta 기반 Inverter 배치도.</span>
@@ -442,14 +444,14 @@
           <figure class="fig fig-fit">
             <a href="static/images/layout_image/tft_layout.png" target="_blank" rel="noopener">
               <img src="static/images/layout_image/tft_layout.png" loading="lazy"
-                   alt="TFT 셀 레이아웃 4종. 분홍색 S/D 금속, 하늘색 IGZO, 보라색 게이트, 빨간색 Via">
+                   alt="TFT 셀 레이아웃 4종. 파란색 S/D 금속, 회색 IGZO, 보라색 게이트, 빨간색 Via">
             </a>
             <figcaption>
               <span class="fig-label">Fig. 7. TFT 셀 레이아웃.</span>
-              <span style="color:#cc44cc">분홍색 = S/D 금속</span>,
-              <span style="color:#4488cc">하늘색 = IGZO 액티브</span>,
+              <span style="color:#cc44cc">하늘색 = S/D 금속</span>,
+              <span style="color:#4488cc">회색 = IGZO 액티브</span>,
               <span style="color:#8844cc">보라색 = 게이트</span>,
-              빨간색 사각형 = Via(5 x 5&nbsp;um)입니다.
+              빨간색 = Via(5 x 5&nbsp;um)입니다.
               W/L 조합과 Overlap / Non-overlap 여부에 따라 게이트와 IGZO가 겹치는 정도가 달라집니다.
             </figcaption>
           </figure>
@@ -459,10 +461,13 @@
         <div class="fig-aside">
           <div class="fig-aside-text">
             <p>
-              기존 인버터는 TFT 특성만 얻을 수 있다는 한계가 있어,
-              Driver와 Load의 W/L 비율(beta)을 기준으로 재설계했습니다.
+              인버터는
+              Driver와 Load의 W/L 비율(beta)을 기준으로 설계했습니다.
               이를 통해 인버터를 보다 다양한 범위에서 비교할 수 있을 것으로 기대합니다.
             </p>
+            <P>
+              Beta 값은 2.5에서부터 15까지 최대한 다양한 값들을 선정하여 설계했습니다. 해당 Beta 값이 인버터가 신호를 얼마나 증폭시키는지, 어떻게 달라지는지 측정하도록 하겠습니다.
+            </P>
           </div>
           <figure class="fig fig-fit">
             <a href="static/images/layout_image/inverter_layout.png" target="_blank" rel="noopener">
@@ -491,7 +496,7 @@
               <li><strong>설계 목적</strong> &mdash; L을 1&nbsp;um까지 축소하여 공정상 형성 가능한 최소 채널 길이를 확인하고,
                   기존 TFT보다 작은 W/L 변화에 따른 드레인 전류와 소자 특성 변화를 비교합니다.</li>
               <li><strong>고려사항</strong> &mdash; 1&nbsp;um 채널은 정렬 오차와 패턴 선폭 오차의 상대적 영향이 크기 때문에
-                  실제 채널 길이가 설계값과 달라질 수 있습니다. 따라서 일부러 오정렬된 구조를 함께 설계하여 공정 성공률을 높였습니다.</li>
+                  실제 채널 길이가 설계값과 달라질 수 있습니다. 또한, 우리 공정의 해상도가 1um 입니다. 따라서 일부러 오정렬된 구조를 함께 설계하여 공정 성공률을 높였습니다.</li>
             </ul>
           </div>
           <figure class="fig fig-fit">
@@ -716,9 +721,8 @@
           시뮬레이션으로 어떤 값이 나올지 미리 예측하고, 그 값으로 실측 결과를 검토하는 것이 목적입니다.
           본래는 시뮬레이션을 바탕으로 설계를 수정하는 것이 옳은 방향이지만,
           하드웨어와 라이선스, 실험 경험의 제약으로 이번에는 실천하지 못했습니다.
-          구조 확인은 Silvaco TCAD로 시작해 전기 해석은 Python DEVSIM으로 진행했으며,
-          아래 결과는 모두 <strong>보정하지 않은 축약 drift-diffusion 모델</strong>의 출력이므로
-          절대값이 아니라 <strong>추세</strong>를 읽는 데 사용해야 합니다.
+          구조 확인은 Silvaco TCAD로, 전기 해석은 Python DEVSIM으로 진행했으며,
+          아래 결과는 모두 보정하지 않은 축약 drift-diffusion 모델의 출력입니다.
         </p>
 
         <h3 class="title is-5">시뮬레이션 방법</h3>
@@ -726,7 +730,7 @@
           <li>Gmsh를 이용하여 실제 소자 치수의 3차원 공정 구조를 구성</li>
           <li>Python DEVSIM의 기준 폭 기반 2.5차원 축약 drift-diffusion 모델 사용</li>
           <li>Poisson 방정식과 전자 연속방정식을 연성 해석, 전기 해석에는 CPU 기반 UMFPACK sparse solver 사용</li>
-          <li>정량 예측이 아닌 <strong>추세 예측</strong>을 목표로 함</li>
+          <li>정량 예측이 아닌 추세 예측을 목표로 함</li>
         </ul>
 
         <div class="fig-grid">
@@ -834,7 +838,7 @@
             <figcaption><span class="fig-label">Fig. 20.</span> W 15 / L 20&nbsp;um 구조</figcaption>
           </figure>
         </div>
-        <p class="is-size-7 has-text-grey">
+        <p>
           두 구조 모두 접촉 길이는 10&nbsp;um로 같습니다. 채널만 짧아지므로
           L = 5&nbsp;um에서는 전체 저항 중 접촉·직렬 저항이 차지하는 비중이 커집니다.
         </p>
